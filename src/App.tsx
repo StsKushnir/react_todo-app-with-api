@@ -7,10 +7,10 @@ import {
   updateTodo,
   USER_ID,
 } from './api/todos';
-import { Header } from './components/header';
-import { TodoList } from './components/todoList';
-import { Footer } from './components/footer';
-import { Notification } from './components/notification';
+import { Header } from './components/Header';
+import { TodoList } from './components/TodoList';
+import { Footer } from './components/Footer';
+import { Notification } from './components/Notification';
 import { Todo } from './types/Todo';
 import { Completed } from './types/Filters';
 import { getFillteredTodos } from './utils/filterTodos';
@@ -21,7 +21,7 @@ export const App: React.FC = () => {
   const [filterParameter, setFiltersParams] = useState(Completed.All);
   const [messageError, setMessageError] = useState(ErrorMessage.Default);
   const [tempTodo, setTempTodo] = useState<Todo | null>(null);
-  const [isDeletingCompleted, setDelComplited] = useState(false);
+  const [isDeletingCompleted, setIsDeletingCompleted] = useState(false);
   const [loadingIds, setLoadingIds] = useState<number[]>([]);
 
   useEffect(() => {
@@ -69,50 +69,36 @@ export const App: React.FC = () => {
   const activeTodos = todos.filter(todo => !todo.completed);
   const completedTodos = todos.filter(todo => todo.completed);
 
+  const completedStatus = activeTodos.length > 0;
+  const todosByStatus = completedStatus ? activeTodos : todos;
+
   const toggleTodoStatus = () => {
-    if (activeTodos.length > 0) {
-      setLoadingIds([...activeTodos.map(todo => todo.id)]);
-      Promise.all(
-        activeTodos.map(todo => {
-          return updateTodo({
-            ...todo,
-            completed: true,
-          });
-        }),
-      )
-        .then(() =>
-          setTodos(prevTodos =>
-            prevTodos.map(item =>
-              item.completed ? item : { ...item, completed: true },
-            ),
-          ),
-        )
-        .catch(() => setMessageError(ErrorMessage.Update))
-        .finally(() => setLoadingIds([]));
-
-      return;
-    }
-
-    setLoadingIds([...todos.map(todo => todo.id)]);
+    setLoadingIds([...todosByStatus.map(todo => todo.id)]);
     Promise.all(
-      completedTodos.map(todo => {
+      todosByStatus.map(todo => {
         return updateTodo({
           ...todo,
-          completed: false,
+          completed: completedStatus,
         });
       }),
     )
       .then(() =>
         setTodos(prevTodos =>
-          prevTodos.map(item => ({ ...item, completed: false })),
+          prevTodos.map(item =>
+            item.completed === completedStatus
+              ? item
+              : { ...item, completed: completedStatus },
+          ),
         ),
       )
       .catch(() => setMessageError(ErrorMessage.Update))
       .finally(() => setLoadingIds([]));
+
+    return;
   };
 
   const clearCompleted = () => {
-    setDelComplited(true);
+    setIsDeletingCompleted(true);
 
     const deletedTodos = completedTodos.map(todo =>
       deleteTodo(todo.id).then(() => todo.id),
@@ -130,7 +116,7 @@ export const App: React.FC = () => {
           }
         });
       })
-      .finally(() => setDelComplited(false));
+      .finally(() => setIsDeletingCompleted(false));
   };
 
   const filteredTodos = getFillteredTodos(todos, filterParameter);
@@ -148,8 +134,8 @@ export const App: React.FC = () => {
           todos={todos}
           tempTodo={tempTodo}
           onSetError={setMessageError}
-          onTodoDefault={setTempTodo}
-          onNewTodo={addNewTodo}
+          onSetTodoDefault={setTempTodo}
+          onSetNewTodo={addNewTodo}
           onToggleTodos={toggleTodoStatus}
         />
 
@@ -162,7 +148,7 @@ export const App: React.FC = () => {
           onDeleteTodo={removeTodo}
         />
 
-        {todos.length !== 0 && (
+        {!!todos.length && (
           <Footer
             filterParam={filterParameter}
             todos={todos}

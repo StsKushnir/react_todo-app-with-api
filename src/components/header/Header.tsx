@@ -8,8 +8,8 @@ type Props = {
   todos: Todo[];
   tempTodo: Todo | null;
   onSetError: (val: ErrorMessage) => void;
-  onTodoDefault: (val: Todo | null) => void;
-  onNewTodo: (val: Todo) => Promise<Todo | void>;
+  onSetTodoDefault: (val: Todo | null) => void;
+  onSetNewTodo: (val: Todo) => Promise<Todo | void>;
   onToggleTodos: () => void;
 };
 
@@ -17,8 +17,8 @@ export const Header: React.FC<Props> = ({
   todos,
   tempTodo,
   onSetError,
-  onTodoDefault,
-  onNewTodo,
+  onSetTodoDefault,
+  onSetNewTodo,
   onToggleTodos,
 }) => {
   const [title, setTitle] = useState('');
@@ -47,17 +47,17 @@ export const Header: React.FC<Props> = ({
       completed: false,
     };
 
-    onTodoDefault(newTodo);
+    onSetTodoDefault(newTodo);
 
     let todoAdded = true;
 
-    onNewTodo(newTodo)
+    onSetNewTodo(newTodo)
       .catch(() => {
         todoAdded = false;
         onSetError(ErrorMessage.Add);
       })
       .finally(() => {
-        onTodoDefault(null);
+        onSetTodoDefault(null);
         if (todoAdded) {
           setTitle('');
         }

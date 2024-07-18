@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Todo } from '../../types/Todo';
 import cn from 'classnames';
-import { TodoItemForm } from '../todoItemForm';
+import { TodoItemForm } from '../TodoItemForm';
 
 type Props = {
   todo: Todo;
@@ -26,6 +26,11 @@ export const TodoItem: React.FC<Props> = ({
   const { completed, title, id } = todo;
 
   const inputChangeField = useRef<HTMLInputElement>(null);
+  const loaderCases =
+    id === 0 ||
+    (deletingCompleted && completed) ||
+    isLoading ||
+    loadingIds.includes(todo.id);
 
   useEffect(() => {
     if (inputChangeField.current && isEditingTodo) {
@@ -109,11 +114,7 @@ export const TodoItem: React.FC<Props> = ({
       <div
         data-cy="TodoLoader"
         className={cn('overlay modal', {
-          'is-active':
-            id === 0 ||
-            (deletingCompleted && completed) ||
-            isLoading ||
-            loadingIds.includes(todo.id),
+          'is-active': loaderCases,
         })}
       >
         <div className="modal-background has-background-white-ter" />

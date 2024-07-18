@@ -66,11 +66,12 @@ export const Footer: React.FC<Props> = ({
 
         <button
           type="button"
-          className="todoapp__clear-completed"
+          className={cn('todoapp__clear-completed', {
+            'button-hidden': !hasTodoCompleted,
+          })}
           data-cy="ClearCompletedButton"
           onClick={onClearCompleted}
           disabled={deletingCompleted || !hasTodoCompleted}
-          style={{ visibility: !hasTodoCompleted ? 'hidden' : 'visible' }}
         >
           Clear completed
         </button>
